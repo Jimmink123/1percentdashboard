@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isSupabaseConfigured, supabase } from './supabaseClient'
 import type { Lead } from './types'
 import SummaryCards from './components/SummaryCards'
@@ -20,37 +20,57 @@ export default function App() {
   const [dateTo, setDateTo] = useState('')
   const [campaign, setCampaign] = useState('')
 
-  // Initial load.
-  useEffect(() => {
+  const loadLeads = useCallback(async (opts: { showSpinner?: boolean } = {}) => {
     if (!isSupabaseConfigured) {
       setLoading(false)
       return
     }
-    let cancelled = false
+    if (opts.showSpinner) setLoading(true)
+    const { data, error } = await supabase
+      .from('leads')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-    async function loadLeads() {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (cancelled) return
-
-      if (error) {
-        setError(error.message)
-      } else {
-        setLeads((data as Lead[]) ?? [])
-        setError(null)
-      }
-      setLoading(false)
+    if (error) {
+      setError(error.message)
+    } else {
+      setLeads((data as Lead[]) ?? [])
+      setError(null)
     }
-
-    loadLeads()
-    return () => {
-      cancelled = true
-    }
+    if (opts.showSpinner) setLoading(false)
   }, [])
+
+  // Initial load.
+  useEffect(() => {
+    loadLeads({ showSpinner: true })
+  }, [loadLeads])
+
+  // Belt-and-suspenders re-sync: the Realtime websocket can go stale after
+  // the tab sits backgrounded for a while (laptop sleep, brief network
+  // drop) without the client cleanly reconnecting. Re-fetching whenever the
+  // tab regains focus (or the network comes back) means the dashboard never
+  // shows more than a moment of staleness — no manual refresh required.
+  useEffect(() => {
+    if (!isSupabaseConfigured) return
+
+    function handleVisible() {
+      if (document.visibilityState === 'visible') {
+        loadLeads()
+      }
+    }
+    function handleOnline() {
+      loadLeads()
+    }
+
+    document.addEventListener('visibilitychange', handleVisible)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('focus', handleVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisible)
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('focus', handleVisible)
+    }
+  }, [loadLeads])
 
   // Realtime subscription — new leads appear immediately, no refresh needed.
   useEffect(() => {
