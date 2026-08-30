@@ -22,3 +22,8 @@ export function usePrefersDark(): boolean {
 export function usePrefersReducedMotion(): boolean {
   return useMediaQuery('(prefers-reduced-motion: reduce)')
 }
+
+/** Matches Tailwind's `sm` breakpoint — true below 640px. */
+export function useIsMobile(): boolean {
+  return useMediaQuery('(max-width: 639px)')
+}

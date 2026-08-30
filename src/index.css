@@ -26,6 +26,17 @@ body {
   }
 }
 
+/* Hides the scrollbar on an overflow-x-auto row (e.g. the date-preset
+   pills) while keeping it fully scrollable by touch/drag/wheel — the
+   arrow buttons are the visible affordance instead. */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Tabular figures wherever numbers need to line up (stat cards, dates, table). */
 .tabular {
   font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;

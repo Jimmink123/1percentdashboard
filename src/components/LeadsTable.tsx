@@ -29,7 +29,7 @@ function formatDate(iso: string): string {
 }
 
 const headerCellClasses =
-  'sticky top-0 z-[1] bg-ink-50 px-4 py-3 font-medium text-ink-500 dark:bg-ink-900 dark:text-ink-400'
+  'sticky top-0 z-[1] whitespace-nowrap bg-ink-50 px-4 py-3 font-medium text-ink-500 dark:bg-ink-900 dark:text-ink-400'
 
 function SortableHeader({
   label,
@@ -136,11 +136,19 @@ export default function LeadsTable({
                     lead.id === justArrivedId ? 'animate-row-flash' : ''
                   }`}
                 >
-                  <td className="px-4 py-3 text-ink-950 dark:text-ink-100">{lead.first_name || '—'}</td>
-                  <td className="px-4 py-3 text-ink-950 dark:text-ink-100">{lead.last_name || '—'}</td>
-                  <td className="px-4 py-3 text-ink-600 dark:text-ink-300">{lead.source || '—'}</td>
-                  <td className="px-4 py-3 text-ink-600 dark:text-ink-300">{lead.campaign || '—'}</td>
-                  <td className="tabular px-4 py-3 text-ink-500 dark:text-ink-400">
+                  <td className="whitespace-nowrap px-4 py-3 text-ink-950 dark:text-ink-100">
+                    {lead.first_name || '—'}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-ink-950 dark:text-ink-100">
+                    {lead.last_name || '—'}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-ink-600 dark:text-ink-300">
+                    {lead.source || '—'}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-ink-600 dark:text-ink-300">
+                    {lead.campaign || '—'}
+                  </td>
+                  <td className="tabular whitespace-nowrap px-4 py-3 text-ink-500 dark:text-ink-400">
                     {formatDate(lead.created_at)}
                   </td>
                 </tr>

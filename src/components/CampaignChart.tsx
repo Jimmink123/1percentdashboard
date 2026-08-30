@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { usePrefersDark, usePrefersReducedMotion } from '../hooks/useMediaPreferences'
+import { useIsMobile, usePrefersDark, usePrefersReducedMotion } from '../hooks/useMediaPreferences'
 import { ChartBarIcon, InboxIcon } from './icons'
 import Skeleton from './Skeleton'
 
@@ -41,6 +41,7 @@ function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
 export default function CampaignChart({ data, loading }: CampaignChartProps) {
   const prefersDark = usePrefersDark()
   const prefersReducedMotion = usePrefersReducedMotion()
+  const isMobile = useIsMobile()
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
   const gridColor = prefersDark ? '#211A38' : '#E1DEF2'
   const axisColor = prefersDark ? '#726B99' : '#726B99'
@@ -89,11 +90,14 @@ export default function CampaignChart({ data, loading }: CampaignChartProps) {
             <CartesianGrid stroke={gridColor} vertical={false} />
             <XAxis
               dataKey="campaign"
-              tick={{ fontSize: 12, fill: axisColor }}
+              // Rotated campaign-name labels get cramped and overlap on
+              // narrow screens — hide them there and lean on the tooltip
+              // (tap a bar) instead, rather than showing an illegible mess.
+              tick={isMobile ? false : { fontSize: 12, fill: axisColor }}
               interval={0}
               angle={-20}
               textAnchor="end"
-              height={60}
+              height={isMobile ? 8 : 60}
               axisLine={false}
               tickLine={false}
             />
@@ -103,6 +107,11 @@ export default function CampaignChart({ data, loading }: CampaignChartProps) {
               width={32}
               axisLine={false}
               tickLine={false}
+              // Auto-scale to whatever the data actually needs, with ~20%
+              // headroom above the tallest bar so its value label never
+              // gets clipped at the top — one lead or one hundred, the
+              // chart always uses the full available height sensibly.
+              domain={[0, (dataMax: number) => Math.max(4, Math.ceil(dataMax * 1.2))]}
             />
             <Tooltip cursor={{ fill: prefersDark ? '#ffffff08' : '#0000000a' }} content={<ChartTooltip />} />
             <Bar

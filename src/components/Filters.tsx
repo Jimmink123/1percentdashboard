@@ -1,4 +1,6 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { getPresetRange, PRESETS } from '../lib/dateRanges'
+import { ChevronLeftIcon, ChevronRightIcon } from './icons'
 
 interface FiltersProps {
   campaigns: string[]
@@ -28,6 +30,33 @@ export default function Filters({
 }: FiltersProps) {
   const hasActiveFilters = Boolean(dateFrom || dateTo || campaign)
 
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+
+  const updateScrollState = useCallback(() => {
+    const el = scrollerRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 4)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+  }, [])
+
+  useEffect(() => {
+    updateScrollState()
+    const el = scrollerRef.current
+    if (!el) return
+    el.addEventListener('scroll', updateScrollState, { passive: true })
+    window.addEventListener('resize', updateScrollState)
+    return () => {
+      el.removeEventListener('scroll', updateScrollState)
+      window.removeEventListener('resize', updateScrollState)
+    }
+  }, [updateScrollState])
+
+  function scrollPresetsBy(amount: number) {
+    scrollerRef.current?.scrollBy({ left: amount, behavior: 'smooth' })
+  }
+
   function applyPreset(id: (typeof PRESETS)[number]['id']) {
     const range = getPresetRange(id)
     onDateFromChange(range.from)
@@ -41,26 +70,58 @@ export default function Filters({
 
   return (
     <div className="rounded-xl border border-ink-200 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-ink-900">
-      {/* Quick date presets — the fast path for the client's monthly review. */}
-      <div className="flex flex-wrap gap-2">
-        {PRESETS.map((preset) => {
-          const active = isPresetActive(preset.id)
-          return (
+      {/* Quick date presets — the fast path for the client's monthly review.
+          Horizontal scroll (rather than wrapping to a second line) keeps
+          this a single tidy row on narrow screens, with arrow buttons as
+          the visible affordance that there's more to scroll to. */}
+      <div className="relative">
+        {canScrollLeft && (
+          <div className="absolute left-0 top-0 z-10 flex h-full items-center bg-gradient-to-r from-white pr-4 dark:from-ink-900">
             <button
-              key={preset.id}
               type="button"
-              onClick={() => applyPreset(preset.id)}
-              aria-pressed={active}
-              className={`cursor-pointer rounded-full px-3.5 py-1.5 text-sm font-medium transition-all active:scale-95 ${
-                active
-                  ? 'bg-primary text-white dark:bg-primary-light dark:text-ink-950'
-                  : 'bg-ink-100 text-ink-600 hover:bg-ink-200 dark:bg-white/5 dark:text-ink-300 dark:hover:bg-white/10'
-              }`}
+              onClick={() => scrollPresetsBy(-140)}
+              aria-label="Scroll presets left"
+              className="cursor-pointer rounded-full border border-ink-200 bg-white p-1 text-ink-500 shadow-sm transition-colors hover:text-ink-800 dark:border-white/10 dark:bg-ink-800 dark:text-ink-300 dark:hover:text-white"
             >
-              {preset.label}
+              <ChevronLeftIcon className="h-4 w-4" />
             </button>
-          )
-        })}
+          </div>
+        )}
+        <div
+          ref={scrollerRef}
+          className="scrollbar-hide flex flex-nowrap gap-2 overflow-x-auto scroll-smooth"
+        >
+          {PRESETS.map((preset) => {
+            const active = isPresetActive(preset.id)
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => applyPreset(preset.id)}
+                aria-pressed={active}
+                className={`shrink-0 cursor-pointer rounded-full px-3.5 py-1.5 text-sm font-medium transition-all active:scale-95 ${
+                  active
+                    ? 'bg-primary text-white dark:bg-primary-light dark:text-ink-950'
+                    : 'bg-ink-100 text-ink-600 hover:bg-ink-200 dark:bg-white/5 dark:text-ink-300 dark:hover:bg-white/10'
+                }`}
+              >
+                {preset.label}
+              </button>
+            )
+          })}
+        </div>
+        {canScrollRight && (
+          <div className="absolute right-0 top-0 z-10 flex h-full items-center bg-gradient-to-l from-white pl-4 dark:from-ink-900">
+            <button
+              type="button"
+              onClick={() => scrollPresetsBy(140)}
+              aria-label="Scroll presets right"
+              className="cursor-pointer rounded-full border border-ink-200 bg-white p-1 text-ink-500 shadow-sm transition-colors hover:text-ink-800 dark:border-white/10 dark:bg-ink-800 dark:text-ink-300 dark:hover:text-white"
+            >
+              <ChevronRightIcon className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="mt-4 flex flex-wrap items-end gap-4 border-t border-ink-100 pt-4 dark:border-white/5">
