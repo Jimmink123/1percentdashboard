@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/supabaseclient.ts","./src/types.ts","./src/vite-env.d.ts","./src/components/campaignchart.tsx","./src/components/filters.tsx","./src/components/leadstable.tsx","./src/components/summarycards.tsx","./src/lib/csv.ts"],"version":"5.9.3"}
