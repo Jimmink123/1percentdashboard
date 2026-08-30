@@ -7,6 +7,7 @@ interface LeadsTableProps {
   loading: boolean
   filtersActive: boolean
   onClearFilters: () => void
+  justArrivedId?: Lead['id'] | null
 }
 
 function formatDate(iso: string): string {
@@ -24,7 +25,13 @@ function formatDate(iso: string): string {
 const headerCellClasses =
   'sticky top-0 z-[1] bg-ink-50 px-4 py-3 font-medium text-ink-500 dark:bg-ink-900 dark:text-ink-400'
 
-export default function LeadsTable({ leads, loading, filtersActive, onClearFilters }: LeadsTableProps) {
+export default function LeadsTable({
+  leads,
+  loading,
+  filtersActive,
+  onClearFilters,
+  justArrivedId,
+}: LeadsTableProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-ink-200 bg-white shadow-sm dark:border-white/5 dark:bg-ink-900">
       <div className="max-h-[32rem] overflow-auto">
@@ -71,7 +78,9 @@ export default function LeadsTable({ leads, loading, filtersActive, onClearFilte
               leads.map((lead) => (
                 <tr
                   key={lead.id}
-                  className="border-b border-ink-100 transition-colors last:border-0 hover:bg-ink-50 dark:border-white/5 dark:hover:bg-white/5"
+                  className={`border-b border-ink-100 transition-colors last:border-0 hover:bg-ink-50 dark:border-white/5 dark:hover:bg-white/5 ${
+                    lead.id === justArrivedId ? 'animate-row-flash' : ''
+                  }`}
                 >
                   <td className="px-4 py-3 text-ink-950 dark:text-ink-100">{lead.first_name || '—'}</td>
                   <td className="px-4 py-3 text-ink-950 dark:text-ink-100">{lead.last_name || '—'}</td>

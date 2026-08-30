@@ -51,7 +51,7 @@ export default function Filters({
               type="button"
               onClick={() => applyPreset(preset.id)}
               aria-pressed={active}
-              className={`cursor-pointer rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+              className={`cursor-pointer rounded-full px-3.5 py-1.5 text-sm font-medium transition-all active:scale-95 ${
                 active
                   ? 'bg-primary text-white dark:bg-primary-light dark:text-ink-950'
                   : 'bg-ink-100 text-ink-600 hover:bg-ink-200 dark:bg-white/5 dark:text-ink-300 dark:hover:bg-white/10'

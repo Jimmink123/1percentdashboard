@@ -8,7 +8,9 @@ export default function Skeleton({ className = '', style }: SkeletonProps) {
     <div
       aria-hidden="true"
       style={style}
-      className={`animate-pulse rounded-md bg-ink-200 dark:bg-ink-800 ${className}`}
-    />
+      className={`relative overflow-hidden rounded-md bg-ink-200 dark:bg-ink-800 ${className}`}
+    >
+      <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/60 to-transparent dark:via-white/10" />
+    </div>
   )
 }

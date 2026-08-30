@@ -7,12 +7,14 @@ import CampaignChart from './components/CampaignChart'
 import LeadsTable from './components/LeadsTable'
 import { downloadCsv, leadsToCsv } from './lib/csv'
 import { AlertIcon, DownloadIcon, SettingsIcon } from './components/icons'
+import Reveal from './components/Reveal'
 
 export default function App() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isLive, setIsLive] = useState(false)
+  const [justArrivedId, setJustArrivedId] = useState<Lead['id'] | null>(null)
 
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -63,6 +65,10 @@ export default function App() {
           setLeads((prev) =>
             prev.some((l) => l.id === newLead.id) ? prev : [newLead, ...prev],
           )
+          setJustArrivedId(newLead.id)
+          setTimeout(() => {
+            setJustArrivedId((current) => (current === newLead.id ? null : current))
+          }, 1800)
         },
       )
       .on(
@@ -147,7 +153,7 @@ export default function App() {
   const statusDotClasses = !isSupabaseConfigured
     ? 'bg-ink-300 dark:bg-ink-600'
     : isLive
-      ? 'bg-emerald-500 animate-pulse'
+      ? 'bg-emerald-500'
       : 'bg-amber-400 animate-pulse'
 
   return (
@@ -161,7 +167,12 @@ export default function App() {
             <p className="text-sm text-ink-500 dark:text-ink-400">Telegram joins by ad source</p>
           </div>
           <div className="flex items-center gap-2 text-sm text-ink-500 dark:text-ink-400">
-            <span className={`inline-block h-2 w-2 rounded-full ${statusDotClasses}`} />
+            <span className="relative inline-flex h-2 w-2">
+              {isLive && (
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              )}
+              <span className={`relative inline-flex h-2 w-2 rounded-full ${statusDotClasses}`} />
+            </span>
             {statusLabel}
           </div>
         </div>
@@ -185,26 +196,26 @@ export default function App() {
           </div>
         )}
 
-        <div className="animate-fade-in">
-          <SummaryCards totalAllTime={totalAllTime} totalThisMonth={totalThisMonth} loading={loading} />
-        </div>
+        <SummaryCards totalAllTime={totalAllTime} totalThisMonth={totalThisMonth} loading={loading} />
 
-        <div className="animate-fade-in">
+        <Reveal delay={120}>
           <CampaignChart data={chartData} loading={loading} />
-        </div>
+        </Reveal>
 
-        <Filters
-          campaigns={campaignOptions}
-          campaign={campaign}
-          onCampaignChange={setCampaign}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          onDateFromChange={setDateFrom}
-          onDateToChange={setDateTo}
-          onReset={handleResetFilters}
-        />
+        <Reveal delay={180}>
+          <Filters
+            campaigns={campaignOptions}
+            campaign={campaign}
+            onCampaignChange={setCampaign}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            onReset={handleResetFilters}
+          />
+        </Reveal>
 
-        <div className="flex items-center justify-between">
+        <Reveal delay={240} className="flex items-center justify-between">
           <div className="tabular text-sm text-ink-500 dark:text-ink-400">
             {loading
               ? 'Loading…'
@@ -213,21 +224,22 @@ export default function App() {
           <button
             onClick={handleExport}
             disabled={filteredLeads.length === 0}
-            className="flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-primary dark:bg-primary-dark dark:text-ink-950 dark:hover:brightness-110"
+            className="flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-all hover:bg-primary-light active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-primary disabled:active:scale-100 dark:bg-primary-dark dark:text-ink-950 dark:hover:brightness-110"
           >
             <DownloadIcon className="h-4 w-4" />
             Export CSV
           </button>
-        </div>
+        </Reveal>
 
-        <div className="animate-fade-in">
+        <Reveal delay={300}>
           <LeadsTable
             leads={filteredLeads}
             loading={loading}
             filtersActive={filtersActive}
             onClearFilters={handleResetFilters}
+            justArrivedId={justArrivedId}
           />
-        </div>
+        </Reveal>
       </main>
     </div>
   )

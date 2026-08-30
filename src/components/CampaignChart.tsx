@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Bar,
   BarChart,
@@ -40,6 +41,7 @@ function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
 export default function CampaignChart({ data, loading }: CampaignChartProps) {
   const prefersDark = usePrefersDark()
   const prefersReducedMotion = usePrefersReducedMotion()
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null)
   const gridColor = prefersDark ? '#211A38' : '#E1DEF2'
   const axisColor = prefersDark ? '#726B99' : '#726B99'
   const maxCount = data.reduce((max, d) => Math.max(max, d.count), 0)
@@ -79,6 +81,10 @@ export default function CampaignChart({ data, loading }: CampaignChartProps) {
                 <stop offset="0%" stopColor={prefersDark ? '#443D5C' : '#C7C1E3'} />
                 <stop offset="100%" stopColor={prefersDark ? '#332C4C' : '#B0A8DC'} />
               </linearGradient>
+              <linearGradient id="barHover" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={prefersDark ? '#C7D2FE' : '#A5B4FC'} />
+                <stop offset="100%" stopColor={prefersDark ? '#818CF8' : '#6366F1'} />
+              </linearGradient>
             </defs>
             <CartesianGrid stroke={gridColor} vertical={false} />
             <XAxis
@@ -104,9 +110,23 @@ export default function CampaignChart({ data, loading }: CampaignChartProps) {
               radius={[6, 6, 0, 0]}
               maxBarSize={56}
               isAnimationActive={!prefersReducedMotion}
+              animationEasing="ease-out"
+              onMouseEnter={(_, index) => setHoverIndex(index)}
+              onMouseLeave={() => setHoverIndex(null)}
             >
               {data.map((entry, i) => (
-                <Cell key={i} fill={entry.count === maxCount ? 'url(#barActive)' : 'url(#barMuted)'} />
+                <Cell
+                  key={i}
+                  className="transition-[filter] duration-150"
+                  style={{ filter: i === hoverIndex ? 'brightness(1.08)' : 'none', cursor: 'pointer' }}
+                  fill={
+                    i === hoverIndex
+                      ? 'url(#barHover)'
+                      : entry.count === maxCount
+                        ? 'url(#barActive)'
+                        : 'url(#barMuted)'
+                  }
+                />
               ))}
             </Bar>
           </BarChart>

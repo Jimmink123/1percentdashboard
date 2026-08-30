@@ -37,12 +37,24 @@ export default {
       },
       keyframes: {
         'fade-in': {
-          '0%': { opacity: '0', transform: 'translateY(4px)' },
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'row-flash': {
+          '0%': { backgroundColor: 'rgba(79, 70, 229, 0.22)' },
+          '100%': { backgroundColor: 'rgba(79, 70, 229, 0)' },
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
         },
       },
       animation: {
-        'fade-in': 'fade-in 250ms ease-out',
+        // "backwards" keeps the element hidden during animation-delay instead
+        // of flashing at full opacity before the staggered entrance kicks in.
+        'fade-in': 'fade-in 550ms cubic-bezier(0.16, 1, 0.3, 1) backwards',
+        'row-flash': 'row-flash 1800ms ease-out',
+        shimmer: 'shimmer 1.6s ease-in-out infinite',
       },
     },
   },

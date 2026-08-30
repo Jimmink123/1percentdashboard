@@ -1,4 +1,6 @@
+import { useCountUp } from '../hooks/useCountUp'
 import { CalendarIcon, UsersIcon } from './icons'
+import Reveal from './Reveal'
 import Skeleton from './Skeleton'
 
 interface SummaryCardsProps {
@@ -13,15 +15,22 @@ function Card({
   label,
   value,
   loading,
+  delay,
 }: {
   icon: React.ReactNode
   iconClasses: string
   label: string
   value: number
   loading: boolean
+  delay: number
 }) {
+  const displayValue = useCountUp(value)
+
   return (
-    <div className="rounded-xl border border-ink-200 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-ink-900">
+    <Reveal
+      delay={delay}
+      className="rounded-xl border border-ink-200 bg-white p-6 shadow-sm dark:border-white/5 dark:bg-ink-900"
+    >
       <div className="flex items-center gap-2 text-sm text-ink-500 dark:text-ink-400">
         <span className={iconClasses}>{icon}</span>
         {label}
@@ -30,10 +39,10 @@ function Card({
         <Skeleton className="mt-2 h-10 w-24" />
       ) : (
         <div className="tabular mt-1 text-4xl font-semibold text-ink-950 dark:text-white">
-          {value.toLocaleString()}
+          {displayValue.toLocaleString()}
         </div>
       )}
-    </div>
+    </Reveal>
   )
 }
 
@@ -46,6 +55,7 @@ export default function SummaryCards({ totalAllTime, totalThisMonth, loading }: 
         label="Total leads (all-time)"
         value={totalAllTime}
         loading={loading}
+        delay={0}
       />
       <Card
         icon={<CalendarIcon className="h-5 w-5" />}
@@ -53,6 +63,7 @@ export default function SummaryCards({ totalAllTime, totalThisMonth, loading }: 
         label="Leads this month"
         value={totalThisMonth}
         loading={loading}
+        delay={60}
       />
     </div>
   )
