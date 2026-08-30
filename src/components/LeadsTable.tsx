@@ -1,6 +1,9 @@
 import type { Lead } from '../types'
-import { InboxIcon } from './icons'
+import { ChevronDownIcon, ChevronUpDownIcon, InboxIcon } from './icons'
 import Skeleton from './Skeleton'
+
+export type SortableColumn = 'source' | 'campaign'
+export type SortDirection = 'asc' | 'desc'
 
 interface LeadsTableProps {
   leads: Lead[]
@@ -8,6 +11,9 @@ interface LeadsTableProps {
   filtersActive: boolean
   onClearFilters: () => void
   justArrivedId?: Lead['id'] | null
+  sortBy: SortableColumn | null
+  sortDir: SortDirection
+  onSort: (column: SortableColumn) => void
 }
 
 function formatDate(iso: string): string {
@@ -25,12 +31,54 @@ function formatDate(iso: string): string {
 const headerCellClasses =
   'sticky top-0 z-[1] bg-ink-50 px-4 py-3 font-medium text-ink-500 dark:bg-ink-900 dark:text-ink-400'
 
+function SortableHeader({
+  label,
+  column,
+  sortBy,
+  sortDir,
+  onSort,
+}: {
+  label: string
+  column: SortableColumn
+  sortBy: SortableColumn | null
+  sortDir: SortDirection
+  onSort: (column: SortableColumn) => void
+}) {
+  const active = sortBy === column
+  return (
+    <th
+      className={headerCellClasses}
+      aria-sort={active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+    >
+      <button
+        type="button"
+        onClick={() => onSort(column)}
+        className="flex cursor-pointer items-center gap-1 transition-colors hover:text-ink-800 dark:hover:text-ink-100"
+      >
+        {label}
+        {active ? (
+          <ChevronDownIcon
+            className={`h-3.5 w-3.5 text-primary transition-transform dark:text-primary-light ${
+              sortDir === 'asc' ? 'rotate-180' : ''
+            }`}
+          />
+        ) : (
+          <ChevronUpDownIcon className="h-3.5 w-3.5 text-ink-300 dark:text-ink-600" />
+        )}
+      </button>
+    </th>
+  )
+}
+
 export default function LeadsTable({
   leads,
   loading,
   filtersActive,
   onClearFilters,
   justArrivedId,
+  sortBy,
+  sortDir,
+  onSort,
 }: LeadsTableProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-ink-200 bg-white shadow-sm dark:border-white/5 dark:bg-ink-900">
@@ -40,8 +88,14 @@ export default function LeadsTable({
             <tr className="border-b border-ink-200 dark:border-white/5">
               <th className={headerCellClasses}>First Name</th>
               <th className={headerCellClasses}>Last Name</th>
-              <th className={headerCellClasses}>Source</th>
-              <th className={headerCellClasses}>Campaign</th>
+              <SortableHeader label="Source" column="source" sortBy={sortBy} sortDir={sortDir} onSort={onSort} />
+              <SortableHeader
+                label="Campaign"
+                column="campaign"
+                sortBy={sortBy}
+                sortDir={sortDir}
+                onSort={onSort}
+              />
               <th className={headerCellClasses}>Date</th>
             </tr>
           </thead>

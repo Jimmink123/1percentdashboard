@@ -4,7 +4,7 @@ import type { Lead } from './types'
 import SummaryCards from './components/SummaryCards'
 import Filters from './components/Filters'
 import CampaignChart from './components/CampaignChart'
-import LeadsTable from './components/LeadsTable'
+import LeadsTable, { type SortableColumn, type SortDirection } from './components/LeadsTable'
 import LeadToastStack, { type ToastItem } from './components/LeadToast'
 import { downloadCsv, leadsToCsv } from './lib/csv'
 import { playNewLeadChime, primeAudio } from './lib/chime'
@@ -44,6 +44,8 @@ export default function App() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [campaign, setCampaign] = useState('')
+  const [sortBy, setSortBy] = useState<SortableColumn | null>(null)
+  const [sortDir, setSortDir] = useState<SortDirection>('asc')
 
   useEffect(() => {
     mutedRef.current = muted
@@ -242,6 +244,15 @@ export default function App() {
       .sort((a, b) => b.count - a.count)
   }, [filteredLeads])
 
+  const sortedLeads = useMemo(() => {
+    if (!sortBy) return filteredLeads
+    const collator = new Intl.Collator(undefined, { sensitivity: 'base' })
+    return [...filteredLeads].sort((a, b) => {
+      const result = collator.compare(a[sortBy] || '', b[sortBy] || '')
+      return sortDir === 'asc' ? result : -result
+    })
+  }, [filteredLeads, sortBy, sortDir])
+
   const filtersActive = Boolean(dateFrom || dateTo || campaign)
 
   function handleResetFilters() {
@@ -250,8 +261,17 @@ export default function App() {
     setCampaign('')
   }
 
+  function handleSort(column: SortableColumn) {
+    if (sortBy === column) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortBy(column)
+      setSortDir('asc')
+    }
+  }
+
   function handleExport() {
-    const csv = leadsToCsv(filteredLeads)
+    const csv = leadsToCsv(sortedLeads)
     const stamp = new Date().toISOString().slice(0, 10)
     downloadCsv(`tmarz-leads-${stamp}.csv`, csv)
   }
@@ -352,11 +372,14 @@ export default function App() {
 
         <Reveal delay={300}>
           <LeadsTable
-            leads={filteredLeads}
+            leads={sortedLeads}
             loading={loading}
             filtersActive={filtersActive}
             onClearFilters={handleResetFilters}
             justArrivedId={justArrivedId}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSort={handleSort}
           />
         </Reveal>
       </main>

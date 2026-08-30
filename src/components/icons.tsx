@@ -131,6 +131,22 @@ export function SpeakerXMarkIcon({ className }: IconProps) {
   )
 }
 
+export function ChevronUpDownIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 15 3.75 3.75L15.75 15m-7.5-6L12 5.25 15.75 9" />
+    </svg>
+  )
+}
+
+export function ChevronDownIcon({ className }: IconProps) {
+  return (
+    <svg {...base} className={className} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+    </svg>
+  )
+}
+
 export function SettingsIcon({ className }: IconProps) {
   return (
     <svg {...base} className={className} aria-hidden="true">

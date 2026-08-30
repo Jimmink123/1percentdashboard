@@ -3,21 +3,39 @@
 
 let audioCtx: AudioContext | null = null
 
+function getContext(): AudioContext | null {
+  const Ctx =
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+  if (!Ctx) return null
+  audioCtx ??= new Ctx()
+  return audioCtx
+}
+
 /** Call once on first user interaction — browsers block audio until then. */
 export function primeAudio() {
-  const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-  if (!Ctx) return
-  audioCtx ??= new Ctx()
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(() => {})
+  const ctx = getContext()
+  if (ctx?.state === 'suspended') {
+    ctx.resume().catch(() => {})
   }
 }
 
-export function playNewLeadChime() {
+export async function playNewLeadChime() {
   try {
-    primeAudio()
-    const ctx = audioCtx
+    const ctx = getContext()
     if (!ctx) return
+
+    // Browsers (Chrome in particular) auto-suspend an idle AudioContext
+    // after a while to save power — priming it once on first click isn't
+    // enough. If we schedule sound against a suspended context, the events
+    // sit stuck at a stale `currentTime` and only fire once something else
+    // happens to resume the context later, which sounds like a random,
+    // badly-delayed chime. So: resume first, every time, and read
+    // `currentTime` fresh afterwards.
+    if (ctx.state === 'suspended') {
+      await ctx.resume()
+    }
+
     const now = ctx.currentTime
     const notes = [880, 1318.51] // A5 then E6 — a soft, bright little "ding-ding"
 
