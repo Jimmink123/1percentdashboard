@@ -46,22 +46,35 @@ joins. Live updates via Supabase Realtime — no refresh needed.
   dashboard looks stale, check the Supabase project dashboard for a "resume"
   prompt.
 
-## Deploying to Cloudflare Pages (via GitHub)
+## Deploying to Cloudflare (via GitHub)
+
+Depending on how the project is created, Cloudflare either sets this up as a
+classic Pages project or (currently the default for new projects) as a
+Workers project deploying static assets via `wrangler deploy`. Either way:
 
 1. Push this repo to GitHub (see below).
-2. In Cloudflare Pages: **Create a project → Connect to Git** → select this repo.
-3. Build settings:
-   - Framework preset: **Vite**
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-4. Under **Settings → Environment variables**, add for both Production and
-   Preview:
+2. In the Cloudflare dashboard: **Workers & Pages → Create → Connect to Git**
+   → select this repo.
+3. If it's set up as a Workers project (deploy command `npx wrangler deploy`,
+   no separate build command needed — wrangler's Vite integration builds and
+   deploys in one step), add the two env vars under **Settings → Builds →
+   Variables and secrets** (this is the *build-time* slot; the separate
+   "Runtime variables and secrets" card further up is disabled for a
+   static-assets-only Worker and isn't the one you want):
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
-5. Deploy. Cloudflare will auto-redeploy on every push to the connected branch.
+4. If it's a classic Pages project instead, set build command `npm run build`,
+   output directory `dist`, and add the same two vars under
+   **Settings → Environment variables** for both Production and Preview.
+5. Deploy (or push a commit) to trigger a build. Cloudflare auto-redeploys on
+   every push to the connected branch after that.
 
-No custom domain is required — the default `*.pages.dev` subdomain is enough
-for this internal tool.
+Because these are `VITE_`-prefixed, Vite inlines them into the built JS at
+build time — saving/changing them only takes effect on the *next* build, not
+retroactively on an already-deployed bundle.
+
+No custom domain is required — the default `*.pages.dev` / `*.workers.dev`
+subdomain is enough for this internal tool.
 
 ## Notes
 
