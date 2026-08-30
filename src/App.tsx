@@ -6,6 +6,7 @@ import Filters from './components/Filters'
 import CampaignChart from './components/CampaignChart'
 import LeadsTable from './components/LeadsTable'
 import { downloadCsv, leadsToCsv } from './lib/csv'
+import { AlertIcon, DownloadIcon, SettingsIcon } from './components/icons'
 
 export default function App() {
   const [leads, setLeads] = useState<Lead[]>([])
@@ -128,6 +129,8 @@ export default function App() {
       .sort((a, b) => b.count - a.count)
   }, [filteredLeads])
 
+  const filtersActive = Boolean(dateFrom || dateTo || campaign)
+
   function handleResetFilters() {
     setDateFrom('')
     setDateTo('')
@@ -140,38 +143,51 @@ export default function App() {
     downloadCsv(`tmarz-leads-${stamp}.csv`, csv)
   }
 
+  const statusLabel = !isSupabaseConfigured ? 'Not configured' : isLive ? 'Live' : 'Connecting…'
+  const statusDotClasses = !isSupabaseConfigured
+    ? 'bg-slate-300 dark:bg-slate-600'
+    : isLive
+      ? 'bg-emerald-500 animate-pulse'
+      : 'bg-amber-400 animate-pulse'
+
   return (
     <div className="min-h-full">
-      <header className="border-b border-black/10 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+        <div className="mx-auto flex max-w-5xl flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
           <div>
-            <h1 className="text-lg font-semibold">T Marz — Leads Dashboard</h1>
-            <p className="text-sm text-black/50">Telegram joins by ad source</p>
+            <h1 className="text-lg font-semibold text-slate-900 dark:text-white">
+              T Marz — Leads Dashboard
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Telegram joins by ad source</p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-black/50">
-            <span
-              className={`inline-block h-2 w-2 rounded-full ${isLive ? 'bg-green-500' : 'bg-black/20'}`}
-            />
-            {!isSupabaseConfigured ? 'Not configured' : isLive ? 'Live' : 'Connecting…'}
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+            <span className={`inline-block h-2 w-2 rounded-full ${statusDotClasses}`} />
+            {statusLabel}
           </div>
         </div>
       </header>
 
       <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-6">
         {!isSupabaseConfigured && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-            Supabase isn't configured yet. Set <code>VITE_SUPABASE_URL</code> and{' '}
-            <code>VITE_SUPABASE_ANON_KEY</code> in <code>.env.local</code> (or in the Cloudflare
-            Pages project's environment variables) and reload.
+          <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+            <SettingsIcon className="mt-0.5 h-5 w-5 shrink-0" />
+            <p>
+              Supabase isn't configured yet. Set <code>VITE_SUPABASE_URL</code> and{' '}
+              <code>VITE_SUPABASE_ANON_KEY</code> in <code>.env.local</code> (or in the Cloudflare
+              project's environment variables) and reload.
+            </p>
           </div>
         )}
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            Couldn't load leads: {error}
+          <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+            <AlertIcon className="mt-0.5 h-5 w-5 shrink-0" />
+            <p>Couldn't load leads: {error}</p>
           </div>
         )}
 
-        <SummaryCards totalAllTime={totalAllTime} totalThisMonth={totalThisMonth} />
+        <div className="animate-fade-in">
+          <SummaryCards totalAllTime={totalAllTime} totalThisMonth={totalThisMonth} loading={loading} />
+        </div>
 
         <Filters
           campaigns={campaignOptions}
@@ -184,22 +200,34 @@ export default function App() {
           onReset={handleResetFilters}
         />
 
-        <CampaignChart data={chartData} />
+        <div className="animate-fade-in">
+          <CampaignChart data={chartData} loading={loading} />
+        </div>
 
         <div className="flex items-center justify-between">
-          <div className="text-sm text-black/50">
-            {loading ? 'Loading…' : `${filteredLeads.length} lead${filteredLeads.length === 1 ? '' : 's'}`}
+          <div className="tabular text-sm text-slate-500 dark:text-slate-400">
+            {loading
+              ? 'Loading…'
+              : `${filteredLeads.length} lead${filteredLeads.length === 1 ? '' : 's'}`}
           </div>
           <button
             onClick={handleExport}
             disabled={filteredLeads.length === 0}
-            className="rounded-md bg-ink px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+            className="flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-light disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-primary dark:bg-primary-dark dark:text-slate-950 dark:hover:brightness-110"
           >
+            <DownloadIcon className="h-4 w-4" />
             Export CSV
           </button>
         </div>
 
-        <LeadsTable leads={filteredLeads} />
+        <div className="animate-fade-in">
+          <LeadsTable
+            leads={filteredLeads}
+            loading={loading}
+            filtersActive={filtersActive}
+            onClearFilters={handleResetFilters}
+          />
+        </div>
       </main>
     </div>
   )
