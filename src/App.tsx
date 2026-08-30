@@ -189,6 +189,10 @@ export default function App() {
           <SummaryCards totalAllTime={totalAllTime} totalThisMonth={totalThisMonth} loading={loading} />
         </div>
 
+        <div className="animate-fade-in">
+          <CampaignChart data={chartData} loading={loading} />
+        </div>
+
         <Filters
           campaigns={campaignOptions}
           campaign={campaign}
@@ -199,10 +203,6 @@ export default function App() {
           onDateToChange={setDateTo}
           onReset={handleResetFilters}
         />
-
-        <div className="animate-fade-in">
-          <CampaignChart data={chartData} loading={loading} />
-        </div>
 
         <div className="flex items-center justify-between">
           <div className="tabular text-sm text-ink-500 dark:text-ink-400">
