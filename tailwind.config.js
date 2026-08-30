@@ -6,13 +6,29 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#1E40AF',
-          light: '#3B82F6',
-          dark: '#60A5FA',
+          DEFAULT: '#4F46E5', // indigo-600
+          light: '#818CF8', // indigo-400 — brighter, for dark surfaces
+          dark: '#818CF8',
+          deep: '#3730A3', // indigo-800 — gradient stop / pressed state
         },
         accent: {
-          DEFAULT: '#D97706',
-          dark: '#F59E0B',
+          DEFAULT: '#DB2777', // pink-600
+          dark: '#F472B6', // pink-400
+        },
+        // Violet-tinted neutral scale, used instead of plain gray so
+        // backgrounds/borders/text carry the same hue as the brand color.
+        ink: {
+          50: '#F8F7FC',
+          100: '#EFEDFA',
+          200: '#E1DEF2',
+          300: '#C7C1E3',
+          400: '#9089B8',
+          500: '#726B99',
+          600: '#585073',
+          700: '#443D5C',
+          800: '#211A38',
+          900: '#150F26',
+          950: '#0B0714',
         },
       },
       fontFamily: {

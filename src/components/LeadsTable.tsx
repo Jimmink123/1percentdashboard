@@ -22,15 +22,15 @@ function formatDate(iso: string): string {
 }
 
 const headerCellClasses =
-  'sticky top-0 z-[1] bg-slate-50 px-4 py-3 font-medium text-slate-500 dark:bg-slate-900 dark:text-slate-400'
+  'sticky top-0 z-[1] bg-ink-50 px-4 py-3 font-medium text-ink-500 dark:bg-ink-900 dark:text-ink-400'
 
 export default function LeadsTable({ leads, loading, filtersActive, onClearFilters }: LeadsTableProps) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="overflow-hidden rounded-xl border border-ink-200 bg-white shadow-sm dark:border-white/5 dark:bg-ink-900">
       <div className="max-h-[32rem] overflow-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800">
+            <tr className="border-b border-ink-200 dark:border-white/5">
               <th className={headerCellClasses}>First Name</th>
               <th className={headerCellClasses}>Last Name</th>
               <th className={headerCellClasses}>Source</th>
@@ -41,7 +41,7 @@ export default function LeadsTable({ leads, loading, filtersActive, onClearFilte
           <tbody>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-slate-100 last:border-0 dark:border-slate-800/60">
+                <tr key={i} className="border-b border-ink-100 last:border-0 dark:border-white/5">
                   {Array.from({ length: 5 }).map((__, j) => (
                     <td key={j} className="px-4 py-3">
                       <Skeleton className="h-4 w-20" />
@@ -52,7 +52,7 @@ export default function LeadsTable({ leads, loading, filtersActive, onClearFilte
             ) : leads.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-4 py-12">
-                  <div className="flex flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500">
+                  <div className="flex flex-col items-center justify-center gap-2 text-ink-400 dark:text-ink-500">
                     <InboxIcon className="h-8 w-8" />
                     <p className="text-sm">No leads match the current filters</p>
                     {filtersActive && (
@@ -71,13 +71,13 @@ export default function LeadsTable({ leads, loading, filtersActive, onClearFilte
               leads.map((lead) => (
                 <tr
                   key={lead.id}
-                  className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/60 dark:hover:bg-slate-800/40"
+                  className="border-b border-ink-100 transition-colors last:border-0 hover:bg-ink-50 dark:border-white/5 dark:hover:bg-white/5"
                 >
-                  <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{lead.first_name || '—'}</td>
-                  <td className="px-4 py-3 text-slate-900 dark:text-slate-100">{lead.last_name || '—'}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{lead.source || '—'}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{lead.campaign || '—'}</td>
-                  <td className="tabular px-4 py-3 text-slate-500 dark:text-slate-400">
+                  <td className="px-4 py-3 text-ink-950 dark:text-ink-100">{lead.first_name || '—'}</td>
+                  <td className="px-4 py-3 text-ink-950 dark:text-ink-100">{lead.last_name || '—'}</td>
+                  <td className="px-4 py-3 text-ink-600 dark:text-ink-300">{lead.source || '—'}</td>
+                  <td className="px-4 py-3 text-ink-600 dark:text-ink-300">{lead.campaign || '—'}</td>
+                  <td className="tabular px-4 py-3 text-ink-500 dark:text-ink-400">
                     {formatDate(lead.created_at)}
                   </td>
                 </tr>

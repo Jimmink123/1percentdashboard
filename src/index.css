@@ -9,10 +9,21 @@ body,
 }
 
 body {
-  @apply bg-slate-50 text-slate-900;
-  @apply dark:bg-slate-950 dark:text-slate-100;
+  @apply bg-ink-50 text-ink-950;
+  @apply dark:bg-ink-950 dark:text-ink-100;
   font-family: 'Fira Sans', ui-sans-serif, system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Subtle radial glow in the corners on dark backgrounds, echoing the
+   reference aesthetic, without competing with the content. */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-image:
+      radial-gradient(ellipse 800px 500px at 8% -10%, rgba(79, 70, 229, 0.16), transparent),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(219, 39, 119, 0.1), transparent);
+    background-repeat: no-repeat;
+  }
 }
 
 /* Tabular figures wherever numbers need to line up (stat cards, dates, table). */
@@ -23,13 +34,13 @@ body {
 
 /* Consistent, visible keyboard focus ring across the app. */
 :focus-visible {
-  outline: 2px solid #1e40af;
+  outline: 2px solid #4f46e5;
   outline-offset: 2px;
   border-radius: 4px;
 }
 @media (prefers-color-scheme: dark) {
   :focus-visible {
-    outline-color: #60a5fa;
+    outline-color: #818cf8;
   }
 }
 

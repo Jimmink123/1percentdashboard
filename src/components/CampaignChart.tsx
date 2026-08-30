@@ -2,7 +2,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  LabelList,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   TooltipProps,
@@ -22,10 +22,16 @@ function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload || payload.length === 0) return null
   const { campaign, count } = payload[0].payload as { campaign: string; count: number }
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-md dark:border-slate-700 dark:bg-slate-800">
-      <div className="font-medium text-slate-900 dark:text-slate-100">{campaign}</div>
-      <div className="tabular text-slate-500 dark:text-slate-400">
-        {count} lead{count === 1 ? '' : 's'}
+    <div className="rounded-2xl border border-ink-200 bg-white/95 px-4 py-3 text-sm shadow-lg backdrop-blur dark:border-white/10 dark:bg-ink-900/95">
+      <div className="mb-2 text-ink-500 dark:text-ink-400">{campaign}</div>
+      <div className="flex items-center gap-4">
+        <span className="flex items-center gap-2 text-ink-600 dark:text-ink-300">
+          <span className="h-2.5 w-2.5 rounded-full bg-primary dark:bg-primary-light" />
+          Leads
+        </span>
+        <span className="tabular ml-auto text-base font-semibold text-ink-950 dark:text-white">
+          {count}
+        </span>
       </div>
     </div>
   )
@@ -34,10 +40,9 @@ function ChartTooltip({ active, payload }: TooltipProps<number, string>) {
 export default function CampaignChart({ data, loading }: CampaignChartProps) {
   const prefersDark = usePrefersDark()
   const prefersReducedMotion = usePrefersReducedMotion()
-  const gridColor = prefersDark ? '#334155' : '#e2e8f0'
-  const axisColor = prefersDark ? '#94a3b8' : '#64748b'
-  const barColor = prefersDark ? '#60A5FA' : '#1E40AF'
-  const barHoverColor = prefersDark ? '#93C5FD' : '#3B82F6'
+  const gridColor = prefersDark ? '#211A38' : '#E1DEF2'
+  const axisColor = prefersDark ? '#726B99' : '#726B99'
+  const maxCount = data.reduce((max, d) => Math.max(max, d.count), 0)
 
   const summary =
     data.length === 0
@@ -45,8 +50,8 @@ export default function CampaignChart({ data, loading }: CampaignChartProps) {
       : `Leads by campaign: ${data.map((d) => `${d.campaign}, ${d.count} leads`).join('; ')}.`
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="mb-2 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+    <div className="rounded-xl border border-ink-200 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-ink-900">
+      <div className="mb-2 flex items-center gap-2 text-sm text-ink-500 dark:text-ink-400">
         <ChartBarIcon className="h-4 w-4" />
         Leads by campaign
       </div>
@@ -58,14 +63,24 @@ export default function CampaignChart({ data, loading }: CampaignChartProps) {
           ))}
         </div>
       ) : data.length === 0 ? (
-        <div className="flex h-64 flex-col items-center justify-center gap-2 text-slate-400 dark:text-slate-500">
+        <div className="flex h-64 flex-col items-center justify-center gap-2 text-ink-400 dark:text-ink-500">
           <InboxIcon className="h-8 w-8" />
           <p className="text-sm">No leads match the current filters</p>
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={280} aria-hidden="true">
-          <BarChart data={data} margin={{ top: 24, right: 16, left: 0, bottom: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+          <BarChart data={data} margin={{ top: 16, right: 16, left: 0, bottom: 8 }}>
+            <defs>
+              <linearGradient id="barActive" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={prefersDark ? '#A5B4FC' : '#818CF8'} />
+                <stop offset="100%" stopColor={prefersDark ? '#6366F1' : '#4F46E5'} />
+              </linearGradient>
+              <linearGradient id="barMuted" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={prefersDark ? '#443D5C' : '#C7C1E3'} />
+                <stop offset="100%" stopColor={prefersDark ? '#332C4C' : '#B0A8DC'} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid stroke={gridColor} vertical={false} />
             <XAxis
               dataKey="campaign"
               tick={{ fontSize: 12, fill: axisColor }}
@@ -73,26 +88,26 @@ export default function CampaignChart({ data, loading }: CampaignChartProps) {
               angle={-20}
               textAnchor="end"
               height={60}
-              stroke={gridColor}
+              axisLine={false}
+              tickLine={false}
             />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: axisColor }} width={32} stroke={gridColor} />
-            <Tooltip
-              cursor={{ fill: prefersDark ? '#ffffff0d' : '#0000000a' }}
-              content={<ChartTooltip />}
+            <YAxis
+              allowDecimals={false}
+              tick={{ fontSize: 12, fill: axisColor }}
+              width={32}
+              axisLine={false}
+              tickLine={false}
             />
+            <Tooltip cursor={{ fill: prefersDark ? '#ffffff08' : '#0000000a' }} content={<ChartTooltip />} />
             <Bar
               dataKey="count"
-              fill={barColor}
-              activeBar={{ fill: barHoverColor }}
-              radius={[4, 4, 0, 0]}
+              radius={[6, 6, 0, 0]}
               maxBarSize={56}
               isAnimationActive={!prefersReducedMotion}
             >
-              <LabelList
-                dataKey="count"
-                position="top"
-                style={{ fill: axisColor, fontSize: 12, fontFamily: 'Fira Code, monospace' }}
-              />
+              {data.map((entry, i) => (
+                <Cell key={i} fill={entry.count === maxCount ? 'url(#barActive)' : 'url(#barMuted)'} />
+              ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>

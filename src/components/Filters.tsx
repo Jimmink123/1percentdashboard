@@ -10,9 +10,9 @@ interface FiltersProps {
 }
 
 const inputClasses =
-  'rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 ' +
+  'rounded-md border border-ink-300 bg-white px-3 py-1.5 text-sm text-ink-950 ' +
   'transition-colors hover:border-primary/50 focus:border-primary focus:outline-none ' +
-  'dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:border-primary-dark/60'
+  'dark:border-white/10 dark:bg-ink-950 dark:text-ink-100 dark:hover:border-primary-light/60'
 
 export default function Filters({
   campaigns,
@@ -27,9 +27,9 @@ export default function Filters({
   const hasActiveFilters = Boolean(dateFrom || dateTo || campaign)
 
   return (
-    <div className="flex flex-wrap items-end gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="flex flex-wrap items-end gap-4 rounded-xl border border-ink-200 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-ink-900">
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-slate-500 dark:text-slate-400" htmlFor="date-from">
+        <label className="text-xs font-medium text-ink-500 dark:text-ink-400" htmlFor="date-from">
           From
         </label>
         <input
@@ -41,7 +41,7 @@ export default function Filters({
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-slate-500 dark:text-slate-400" htmlFor="date-to">
+        <label className="text-xs font-medium text-ink-500 dark:text-ink-400" htmlFor="date-to">
           To
         </label>
         <input
@@ -53,7 +53,7 @@ export default function Filters({
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-slate-500 dark:text-slate-400" htmlFor="campaign">
+        <label className="text-xs font-medium text-ink-500 dark:text-ink-400" htmlFor="campaign">
           Campaign
         </label>
         <select
@@ -74,7 +74,7 @@ export default function Filters({
         <button
           type="button"
           onClick={onReset}
-          className="cursor-pointer rounded-md px-3 py-1.5 text-sm text-slate-500 underline underline-offset-2 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+          className="cursor-pointer rounded-md px-3 py-1.5 text-sm text-ink-500 underline underline-offset-2 transition-colors hover:bg-ink-100 hover:text-ink-800 dark:text-ink-400 dark:hover:bg-white/5 dark:hover:text-ink-100"
         >
           Clear filters
         </button>
