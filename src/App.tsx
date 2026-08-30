@@ -18,8 +18,12 @@ import {
 import Reveal from './components/Reveal'
 
 const MUTE_STORAGE_KEY = 'tmarz-dashboard-muted'
-const TOAST_VISIBLE_MS = 5000
+const TOAST_VISIBLE_MS = 10000
 const TOAST_EXIT_MS = 250
+// Cap how many toasts stack on screen at once — if leads come in faster than
+// that, the oldest one retires early (with its normal exit animation) to
+// make room, instead of piling up into an ever-growing, annoying wall.
+const MAX_VISIBLE_TOASTS = 3
 
 export default function App() {
   const [leads, setLeads] = useState<Lead[]>([])
@@ -72,6 +76,34 @@ export default function App() {
       setToasts((prev) => prev.filter((t) => t.id !== id))
     }, TOAST_EXIT_MS)
   }, [])
+
+  const pushLeadToast = useCallback(
+    (lead: Lead) => {
+      const toastId = `${lead.id}-${Date.now()}`
+
+      setToasts((prev) => {
+        const active = prev.filter((t) => !t.leaving)
+        let next = prev
+        if (active.length >= MAX_VISIBLE_TOASTS) {
+          // Retire the oldest active toast early to make room, rather than
+          // letting the stack grow without bound.
+          const oldest = active[0]
+          next = prev.map((t) => (t.id === oldest.id ? { ...t, leaving: true } : t))
+          setTimeout(() => {
+            setToasts((p) => p.filter((t) => t.id !== oldest.id))
+          }, TOAST_EXIT_MS)
+        }
+        return [
+          ...next,
+          { id: toastId, firstName: lead.first_name || 'Someone', source: lead.source, leaving: false },
+        ]
+      })
+
+      if (!mutedRef.current) playNewLeadChime()
+      setTimeout(() => dismissToast(toastId), TOAST_VISIBLE_MS)
+    },
+    [dismissToast],
+  )
 
   const loadLeads = useCallback(async (opts: { showSpinner?: boolean } = {}) => {
     if (!isSupabaseConfigured) {
@@ -143,18 +175,7 @@ export default function App() {
             setJustArrivedId((current) => (current === newLead.id ? null : current))
           }, 1800)
 
-          const toastId = `${newLead.id}-${Date.now()}`
-          setToasts((prev) => [
-            ...prev,
-            {
-              id: toastId,
-              firstName: newLead.first_name || 'Someone',
-              source: newLead.source,
-              leaving: false,
-            },
-          ])
-          if (!mutedRef.current) playNewLeadChime()
-          setTimeout(() => dismissToast(toastId), TOAST_VISIBLE_MS)
+          pushLeadToast(newLead)
         },
       )
       .on(
