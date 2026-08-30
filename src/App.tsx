@@ -1,13 +1,25 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { isSupabaseConfigured, supabase } from './supabaseClient'
 import type { Lead } from './types'
 import SummaryCards from './components/SummaryCards'
 import Filters from './components/Filters'
 import CampaignChart from './components/CampaignChart'
 import LeadsTable from './components/LeadsTable'
+import LeadToastStack, { type ToastItem } from './components/LeadToast'
 import { downloadCsv, leadsToCsv } from './lib/csv'
-import { AlertIcon, DownloadIcon, SettingsIcon } from './components/icons'
+import { playNewLeadChime, primeAudio } from './lib/chime'
+import {
+  AlertIcon,
+  DownloadIcon,
+  SettingsIcon,
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon,
+} from './components/icons'
 import Reveal from './components/Reveal'
+
+const MUTE_STORAGE_KEY = 'tmarz-dashboard-muted'
+const TOAST_VISIBLE_MS = 5000
+const TOAST_EXIT_MS = 250
 
 export default function App() {
   const [leads, setLeads] = useState<Lead[]>([])
@@ -15,10 +27,51 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [isLive, setIsLive] = useState(false)
   const [justArrivedId, setJustArrivedId] = useState<Lead['id'] | null>(null)
+  const [toasts, setToasts] = useState<ToastItem[]>([])
+  const [muted, setMuted] = useState(() => {
+    try {
+      return localStorage.getItem(MUTE_STORAGE_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
+  const mutedRef = useRef(muted)
 
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [campaign, setCampaign] = useState('')
+
+  useEffect(() => {
+    mutedRef.current = muted
+    try {
+      localStorage.setItem(MUTE_STORAGE_KEY, String(muted))
+    } catch {
+      // localStorage unavailable (private mode, etc.) — mute preference just
+      // won't persist across reloads, which is fine.
+    }
+  }, [muted])
+
+  // Browsers block audio until the user has interacted with the page at
+  // least once — warm up the AudioContext on the first click/keypress so
+  // the very first toast's chime has a chance to actually play.
+  useEffect(() => {
+    function warmUp() {
+      primeAudio()
+    }
+    window.addEventListener('pointerdown', warmUp, { once: true })
+    window.addEventListener('keydown', warmUp, { once: true })
+    return () => {
+      window.removeEventListener('pointerdown', warmUp)
+      window.removeEventListener('keydown', warmUp)
+    }
+  }, [])
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, leaving: true } : t)))
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, TOAST_EXIT_MS)
+  }, [])
 
   const loadLeads = useCallback(async (opts: { showSpinner?: boolean } = {}) => {
     if (!isSupabaseConfigured) {
@@ -89,6 +142,19 @@ export default function App() {
           setTimeout(() => {
             setJustArrivedId((current) => (current === newLead.id ? null : current))
           }, 1800)
+
+          const toastId = `${newLead.id}-${Date.now()}`
+          setToasts((prev) => [
+            ...prev,
+            {
+              id: toastId,
+              firstName: newLead.first_name || 'Someone',
+              source: newLead.source,
+              leaving: false,
+            },
+          ])
+          if (!mutedRef.current) playNewLeadChime()
+          setTimeout(() => dismissToast(toastId), TOAST_VISIBLE_MS)
         },
       )
       .on(
@@ -186,14 +252,26 @@ export default function App() {
             </h1>
             <p className="text-sm text-ink-500 dark:text-ink-400">Telegram joins by ad source</p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-ink-500 dark:text-ink-400">
-            <span className="relative inline-flex h-2 w-2">
-              {isLive && (
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              )}
-              <span className={`relative inline-flex h-2 w-2 rounded-full ${statusDotClasses}`} />
+          <div className="flex items-center gap-3 text-sm text-ink-500 dark:text-ink-400">
+            <button
+              type="button"
+              onClick={() => setMuted((m) => !m)}
+              aria-pressed={muted}
+              aria-label={muted ? 'Unmute new lead sound' : 'Mute new lead sound'}
+              title={muted ? 'Unmute new lead sound' : 'Mute new lead sound'}
+              className="cursor-pointer rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700 dark:text-ink-500 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+              {muted ? <SpeakerXMarkIcon className="h-4 w-4" /> : <SpeakerWaveIcon className="h-4 w-4" />}
+            </button>
+            <span className="flex items-center gap-2">
+              <span className="relative inline-flex h-2 w-2">
+                {isLive && (
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                )}
+                <span className={`relative inline-flex h-2 w-2 rounded-full ${statusDotClasses}`} />
+              </span>
+              {statusLabel}
             </span>
-            {statusLabel}
           </div>
         </div>
       </header>
@@ -261,6 +339,8 @@ export default function App() {
           />
         </Reveal>
       </main>
+
+      <LeadToastStack toasts={toasts} onDismiss={dismissToast} />
     </div>
   )
 }

@@ -48,6 +48,14 @@ export default {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' },
         },
+        'toast-in': {
+          '0%': { opacity: '0', transform: 'translateY(16px) scale(0.98)' },
+          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        'toast-out': {
+          '0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+          '100%': { opacity: '0', transform: 'translateY(-8px) scale(0.98)' },
+        },
       },
       animation: {
         // "backwards" keeps the element hidden during animation-delay instead
@@ -55,6 +63,8 @@ export default {
         'fade-in': 'fade-in 550ms cubic-bezier(0.16, 1, 0.3, 1) backwards',
         'row-flash': 'row-flash 1800ms ease-out',
         shimmer: 'shimmer 1.6s ease-in-out infinite',
+        'toast-in': 'toast-in 350ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'toast-out': 'toast-out 250ms ease-in forwards',
       },
     },
   },
