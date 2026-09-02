@@ -34,14 +34,20 @@ joins. Live updates via Supabase Realtime — no refresh needed.
 
 ## Supabase requirements
 
+For a fresh Supabase project, run [`supabase/schema.sql`](supabase/schema.sql)
+once in **SQL Editor** — it creates the `leads` table, both RLS policies
+(anon read for the dashboard, anon insert for the landing page popup), and
+enables Realtime, in one shot.
+
+If the table already exists elsewhere, it just needs:
+
 - Table `leads` with columns: `id`, `first_name`, `last_name`, `source`,
   `campaign`, `ad`, `created_at`.
 - Realtime enabled on the `leads` table (Database → Replication in the Supabase
   dashboard).
 - Row Level Security: the dashboard reads with the **anon/public** key, so make
-  sure a `SELECT` policy exists on `leads` for the `anon` role (this should
-  already be in place from the website build — if the dashboard loads with no
-  rows and no error, check this first).
+  sure a `SELECT` policy exists on `leads` for the `anon` role — if the
+  dashboard loads with no rows and no error, check this first.
 - Free-tier projects pause after 7 days with no database activity. If the
   dashboard looks stale, check the Supabase project dashboard for a "resume"
   prompt.
