@@ -44,6 +44,7 @@ export default function App() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [campaign, setCampaign] = useState('')
+  const [sourceFilter, setSourceFilter] = useState('')
   const [sortBy, setSortBy] = useState<SortableColumn | null>(null)
   const [sortDir, setSortDir] = useState<SortDirection>('asc')
 
@@ -213,15 +214,24 @@ export default function App() {
     return Array.from(set).sort()
   }, [leads])
 
+  const sourceOptions = useMemo(() => {
+    const set = new Set<string>()
+    leads.forEach((l) => {
+      if (l.source) set.add(l.source)
+    })
+    return Array.from(set).sort()
+  }, [leads])
+
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
       if (campaign && lead.campaign !== campaign) return false
+      if (sourceFilter && lead.source !== sourceFilter) return false
       const created = new Date(lead.created_at)
       if (dateFrom && created < new Date(`${dateFrom}T00:00:00`)) return false
       if (dateTo && created > new Date(`${dateTo}T23:59:59.999`)) return false
       return true
     })
-  }, [leads, campaign, dateFrom, dateTo])
+  }, [leads, campaign, sourceFilter, dateFrom, dateTo])
 
   const totalAllTime = leads.length
 
@@ -253,9 +263,10 @@ export default function App() {
     })
   }, [filteredLeads, sortBy, sortDir])
 
-  const filtersActive = Boolean(dateFrom || dateTo || campaign)
+  const filtersActive = Boolean(dateFrom || dateTo || campaign || sourceFilter)
 
   function handleResetFilters() {
+    setSourceFilter('')
     setDateFrom('')
     setDateTo('')
     setCampaign('')
@@ -346,6 +357,9 @@ export default function App() {
             campaigns={campaignOptions}
             campaign={campaign}
             onCampaignChange={setCampaign}
+            sources={sourceOptions}
+            source={sourceFilter}
+            onSourceChange={setSourceFilter}
             dateFrom={dateFrom}
             dateTo={dateTo}
             onDateFromChange={setDateFrom}

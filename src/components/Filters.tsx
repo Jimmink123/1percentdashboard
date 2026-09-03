@@ -6,6 +6,9 @@ interface FiltersProps {
   campaigns: string[]
   campaign: string
   onCampaignChange: (value: string) => void
+  sources: string[]
+  source: string
+  onSourceChange: (value: string) => void
   dateFrom: string
   dateTo: string
   onDateFromChange: (value: string) => void
@@ -22,13 +25,16 @@ export default function Filters({
   campaigns,
   campaign,
   onCampaignChange,
+  sources,
+  source,
+  onSourceChange,
   dateFrom,
   dateTo,
   onDateFromChange,
   onDateToChange,
   onReset,
 }: FiltersProps) {
-  const hasActiveFilters = Boolean(dateFrom || dateTo || campaign)
+  const hasActiveFilters = Boolean(dateFrom || dateTo || campaign || source)
 
   const scrollerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -148,6 +154,24 @@ export default function Filters({
             onChange={(e) => onDateToChange(e.target.value)}
             className={inputClasses}
           />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-ink-500 dark:text-ink-400" htmlFor="source">
+            Source
+          </label>
+          <select
+            id="source"
+            value={source}
+            onChange={(e) => onSourceChange(e.target.value)}
+            className={`${inputClasses} cursor-pointer`}
+          >
+            <option value="">All sources</option>
+            {sources.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-ink-500 dark:text-ink-400" htmlFor="campaign">

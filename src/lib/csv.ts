@@ -9,7 +9,16 @@ function escapeCsvField(value: unknown): string {
 }
 
 export function leadsToCsv(leads: Lead[]): string {
-  const headers = ['first_name', 'last_name', 'source', 'campaign', 'ad', 'created_at']
+  const headers = [
+    'first_name',
+    'last_name',
+    'source',
+    'medium',
+    'campaign',
+    'ad',
+    'fbclid',
+    'created_at',
+  ]
   const rows = leads.map((lead) =>
     headers.map((key) => escapeCsvField(lead[key as keyof Lead])).join(','),
   )

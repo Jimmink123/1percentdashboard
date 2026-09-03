@@ -8,8 +8,10 @@ create table public.leads (
   first_name text not null,
   last_name text not null,
   source text,
+  medium text,
   campaign text,
   ad text,
+  fbclid text,
   created_at timestamptz not null default now()
 );
 

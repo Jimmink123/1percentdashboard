@@ -42,7 +42,7 @@ enables Realtime, in one shot.
 If the table already exists elsewhere, it just needs:
 
 - Table `leads` with columns: `id`, `first_name`, `last_name`, `source`,
-  `campaign`, `ad`, `created_at`.
+  `medium`, `campaign`, `ad`, `fbclid`, `created_at`.
 - Realtime enabled on the `leads` table (Database → Replication in the Supabase
   dashboard).
 - Row Level Security: the dashboard reads with the **anon/public** key, so make
