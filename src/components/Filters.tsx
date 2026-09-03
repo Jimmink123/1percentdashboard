@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getPresetRange, PRESETS } from '../lib/dateRanges'
-import { ChevronLeftIcon, ChevronRightIcon } from './icons'
+import { ChevronLeftIcon, ChevronRightIcon, SearchIcon, XMarkIcon } from './icons'
 
 interface FiltersProps {
   campaigns: string[]
@@ -9,6 +9,8 @@ interface FiltersProps {
   sources: string[]
   source: string
   onSourceChange: (value: string) => void
+  search: string
+  onSearchChange: (value: string) => void
   dateFrom: string
   dateTo: string
   onDateFromChange: (value: string) => void
@@ -28,13 +30,15 @@ export default function Filters({
   sources,
   source,
   onSourceChange,
+  search,
+  onSearchChange,
   dateFrom,
   dateTo,
   onDateFromChange,
   onDateToChange,
   onReset,
 }: FiltersProps) {
-  const hasActiveFilters = Boolean(dateFrom || dateTo || campaign || source)
+  const hasActiveFilters = Boolean(dateFrom || dateTo || campaign || source || search)
 
   const scrollerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -76,6 +80,28 @@ export default function Filters({
 
   return (
     <div className="rounded-xl border border-ink-200 bg-white p-4 shadow-sm dark:border-white/5 dark:bg-ink-900">
+      <div className="relative mb-4">
+        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400 dark:text-ink-500" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search by name…"
+          aria-label="Search by name"
+          className={`${inputClasses} w-full pl-9 ${search ? 'pr-9' : 'pr-3'}`}
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => onSearchChange('')}
+            aria-label="Clear search"
+            className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer rounded p-1 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700 dark:hover:bg-white/10 dark:hover:text-white"
+          >
+            <XMarkIcon className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
       {/* Quick date presets — the fast path for the client's monthly review.
           Horizontal scroll (rather than wrapping to a second line) keeps
           this a single tidy row on narrow screens, with arrow buttons as

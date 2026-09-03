@@ -45,6 +45,7 @@ export default function App() {
   const [dateTo, setDateTo] = useState('')
   const [campaign, setCampaign] = useState('')
   const [sourceFilter, setSourceFilter] = useState('')
+  const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<SortableColumn | null>(null)
   const [sortDir, setSortDir] = useState<SortDirection>('asc')
 
@@ -223,15 +224,20 @@ export default function App() {
   }, [leads])
 
   const filteredLeads = useMemo(() => {
+    const query = search.trim().toLowerCase()
     return leads.filter((lead) => {
       if (campaign && lead.campaign !== campaign) return false
       if (sourceFilter && lead.source !== sourceFilter) return false
+      if (query) {
+        const fullName = `${lead.first_name ?? ''} ${lead.last_name ?? ''}`.toLowerCase()
+        if (!fullName.includes(query)) return false
+      }
       const created = new Date(lead.created_at)
       if (dateFrom && created < new Date(`${dateFrom}T00:00:00`)) return false
       if (dateTo && created > new Date(`${dateTo}T23:59:59.999`)) return false
       return true
     })
-  }, [leads, campaign, sourceFilter, dateFrom, dateTo])
+  }, [leads, campaign, sourceFilter, search, dateFrom, dateTo])
 
   const totalAllTime = leads.length
 
@@ -258,14 +264,18 @@ export default function App() {
     if (!sortBy) return filteredLeads
     const collator = new Intl.Collator(undefined, { sensitivity: 'base' })
     return [...filteredLeads].sort((a, b) => {
-      const result = collator.compare(a[sortBy] || '', b[sortBy] || '')
+      const result =
+        sortBy === 'created_at'
+          ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          : collator.compare(a[sortBy] || '', b[sortBy] || '')
       return sortDir === 'asc' ? result : -result
     })
   }, [filteredLeads, sortBy, sortDir])
 
-  const filtersActive = Boolean(dateFrom || dateTo || campaign || sourceFilter)
+  const filtersActive = Boolean(dateFrom || dateTo || campaign || sourceFilter || search)
 
   function handleResetFilters() {
+    setSearch('')
     setSourceFilter('')
     setDateFrom('')
     setDateTo('')
@@ -277,7 +287,9 @@ export default function App() {
       setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
     } else {
       setSortBy(column)
-      setSortDir('asc')
+      // Dates read naturally newest-first on first click; text columns read
+      // naturally A-Z.
+      setSortDir(column === 'created_at' ? 'desc' : 'asc')
     }
   }
 
@@ -360,6 +372,8 @@ export default function App() {
             sources={sourceOptions}
             source={sourceFilter}
             onSourceChange={setSourceFilter}
+            search={search}
+            onSearchChange={setSearch}
             dateFrom={dateFrom}
             dateTo={dateTo}
             onDateFromChange={setDateFrom}

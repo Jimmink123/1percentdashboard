@@ -3,7 +3,7 @@ import type { Lead } from '../types'
 import { CheckIcon, ChevronDownIcon, ChevronUpDownIcon, ClipboardIcon, InboxIcon } from './icons'
 import Skeleton from './Skeleton'
 
-export type SortableColumn = 'source' | 'campaign'
+export type SortableColumn = 'source' | 'campaign' | 'created_at'
 export type SortDirection = 'asc' | 'desc'
 
 interface LeadsTableProps {
@@ -153,7 +153,13 @@ export default function LeadsTable({
                 onSort={onSort}
               />
               <th className={headerCellClasses}>Ad</th>
-              <th className={headerCellClasses}>Date</th>
+              <SortableHeader
+                label="Date"
+                column="created_at"
+                sortBy={sortBy}
+                sortDir={sortDir}
+                onSort={onSort}
+              />
             </tr>
           </thead>
           <tbody>
