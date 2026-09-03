@@ -6,6 +6,7 @@ import Filters from './components/Filters'
 import CampaignChart from './components/CampaignChart'
 import LeadsTable, { type SortableColumn, type SortDirection } from './components/LeadsTable'
 import LeadToastStack, { type ToastItem } from './components/LeadToast'
+import SearchBox from './components/SearchBox'
 import { downloadCsv, leadsToCsv } from './lib/csv'
 import { playNewLeadChime, primeAudio } from './lib/chime'
 import {
@@ -372,8 +373,6 @@ export default function App() {
             sources={sourceOptions}
             source={sourceFilter}
             onSourceChange={setSourceFilter}
-            search={search}
-            onSearchChange={setSearch}
             dateFrom={dateFrom}
             dateTo={dateTo}
             onDateFromChange={setDateFrom}
@@ -382,11 +381,14 @@ export default function App() {
           />
         </Reveal>
 
-        <Reveal delay={240} className="flex items-center justify-between">
-          <div className="tabular text-sm text-ink-500 dark:text-ink-400">
-            {loading
-              ? 'Loading…'
-              : `${filteredLeads.length} lead${filteredLeads.length === 1 ? '' : 's'}`}
+        <Reveal delay={240} className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="tabular whitespace-nowrap text-sm text-ink-500 dark:text-ink-400">
+              {loading
+                ? 'Loading…'
+                : `${filteredLeads.length} lead${filteredLeads.length === 1 ? '' : 's'}`}
+            </div>
+            <SearchBox value={search} onChange={setSearch} />
           </div>
           <button
             onClick={handleExport}
